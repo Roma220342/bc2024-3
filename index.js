@@ -4,11 +4,11 @@ const commander = require('commander');
 const program = new commander.Command();
 
 program
-  .requiredOption('-i, --input <path>', 'Path to file, response from NBU API')
-  .option('-o, --output <path>', 'Path to the file where we will save the result')
+  .requiredOption('-i, --input <path>', 'json with NBU api request)')
+  .option('-o, --output <path>', 'Path to file you want to save result')
   .option('-d, --display', 'Show result in console');
 
-program.parse();
+program.parse(process.argv);
 
 const options = program.opts();
 
@@ -25,17 +25,19 @@ if (!fs.existsSync(options.input)) {
 }
 
 // Читання файлу (JSON)
-const data = fs.readFileSync(options.input, 'utf-8');
+const data = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
 
-// Обробка результату (для прикладу)
-const result = JSON.parse(data); 
+// Обробка результату  в форматі який заданий у варіанті 
+//map не паше якщо data не масив. fs.readFileSync повертає рядок,
+//тому його потрібно парсити як JSON, щоб отримати масив об’єктів 
+const results = data.map(item => `${item.StockCode}-${item.ValCode}-${item.Attraction}`); 
 
 // Виведення результату
 if (options.display) {
-  console.log(result);
+  console.log(results);
 }
 
 // Запис результату у файл
 if (options.output) {
-  fs.writeFileSync(options.output, JSON.stringify(result));
+  fs.writeFileSync(options.output, JSON.stringify(results, null, 2));
 }
